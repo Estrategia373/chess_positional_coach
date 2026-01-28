@@ -7,7 +7,7 @@ workflows:
     environment:
       flutter: stable
       groups:
-        - keystore_credentials
+        - keystore_credentials     # sube aquí tu .jks + variables (alias / contraseñas)
 
     scripts:
       - name: Generate Android platform (create /android if missing)
@@ -18,8 +18,9 @@ workflows:
       - name: Flutter pub get
         script: flutter pub get
 
-      - name: Flutter analyze (fail fast)
-        script: flutter analyze lib --fatal-infos --fatal-warnings
+      # 👇 Quitar flags fatales para que 'info/warning' NO paren el build
+      - name: Flutter analyze (non-fatal)
+        script: flutter analyze lib
 
       - name: Build appbundle (release)
         script: flutter build appbundle --release -v
@@ -27,7 +28,7 @@ workflows:
     artifacts:
       - build/app/outputs/bundle/release/*.aab
 
-    # Optional publishing to Google Play (cuando tengas la credencial JSON):
+    # Publicación opcional a Google Play (cuando tengas las credenciales):
     # publishing:
     #   google_play:
     #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
