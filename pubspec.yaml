@@ -1,0 +1,22 @@
+
+name: chess_positional_coach
+description: Chess Positional Coach (ES/EN) with positional training. Auto-generates /android in CI.
+publish_to: 'none'
+version: 1.7.0+10
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  shared_preferences: ^2.2.2
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/positions/pack_2000.json

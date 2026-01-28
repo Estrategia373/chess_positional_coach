@@ -1,0 +1,32 @@
+
+workflows:
+  android-release:
+    name: Android Release AAB (auto-add android, sanity checked)
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      groups:
+        - keystore_credentials
+    scripts:
+      - name: Ensure Android platform (generate /android if missing)
+        script: |
+          flutter --version
+          flutter create --platforms=android --org com.chess.positional.master .
+      - name: Sanity check (print commit, main.dart header, validate assets)
+        script: |
+          set -e
+          echo "HEAD commit:"; git rev-parse HEAD
+          echo "Latest commit:"; git log -1 --pretty="format:%h %ci %s"
+          echo "First 80 lines of lib/main.dart:"; sed -n '1,80p' lib/main.dart || true
+          echo "Check assets presence:"; ls -la assets/positions || true
+          test -f assets/positions/pack_2000.json || (echo "ERROR: assets/positions/pack_2000.json missing"; exit 1)
+      - name: Clean cache & pub get
+        script: |
+          rm -rf build .dart_tool
+          flutter pub get
+      - name: Flutter analyze (fail fast)
+        script: flutter analyze --fatal-infos --fatal-warnings
+      - name: Build appbundle (release)
+        script: flutter build appbundle --release -v
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
