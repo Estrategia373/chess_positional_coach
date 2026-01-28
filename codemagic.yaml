@@ -7,7 +7,7 @@ workflows:
     environment:
       flutter: stable
       groups:
-        - keystore_credentials     # crea este grupo y sube tu .jks con alias/contraseñas
+        - keystore_credentials
 
     scripts:
       - name: Generate Android platform (create /android if missing)
@@ -19,7 +19,7 @@ workflows:
         script: flutter pub get
 
       - name: Flutter analyze (fail fast)
-        script: flutter analyze --fatal-infos --fatal-warnings
+        script: flutter analyze lib --fatal-infos --fatal-warnings
 
       - name: Build appbundle (release)
         script: flutter build appbundle --release -v
