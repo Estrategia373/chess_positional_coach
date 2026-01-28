@@ -12,25 +12,41 @@ workflows:
         script: |
           flutter --version
           flutter create --platforms=android --org com.chess.positional.master .
-      - name: Sanity check & auto-patch dot-shorthands
+      - name: Sanity check & auto-patch imports + dot-shorthands
         script: |
           set -e
           echo "HEAD commit:"; git rev-parse HEAD
           echo "Latest commit:"; git log -1 --pretty="format:%h %ci %s"
           echo "First 60 lines of lib/main.dart:"; sed -n '1,60p' lib/main.dart || true
-          echo "Searching for '.fromSeed(' across lib/..."
+
+          echo "Searching wrong package prefix 'chesa_positional_coach' across lib/..."
+          if grep -R "package:chesa_positional_coach" -n lib; then
+            echo "FOUND wrong prefix -> patching to 'package:chess_positional_coach'"
+            sed -i.bak 's/package:chesa_positional_coach/package:chess_positional_coach/g' $(grep -R "package:chesa_positional_coach" -l lib) || true
+          else
+            echo "OK: no wrong prefix found."
+          fi
+
+          echo "Searching '.fromSeed(' across lib/..."
           if grep -R "\.fromSeed(" -n lib; then
-            echo "FOUND experimental '.fromSeed(' — patching to 'ColorScheme.fromSeed('";
+            echo "FOUND experimental '.fromSeed(' -> patching to 'ColorScheme.fromSeed('"
             sed -i.bak 's/\.fromSeed(/ColorScheme.fromSeed(/g' $(grep -R "\.fromSeed(" -l lib) || true
           else
             echo "OK: no dot-shorthands found."
           fi
+
+          echo "Check assets presence:"
+          ls -la assets/positions || true
+          test -f assets/positions/pack_2000.json || (echo "ERROR: assets/positions/pack_2000.json missing"; exit 1)
+
       - name: Clean cache & pub get
         script: |
           rm -rf build .dart_tool
           flutter pub get
+
       - name: Flutter analyze (fail fast)
         script: flutter analyze --fatal-infos --fatal-warnings
+
       - name: Build appbundle (release)
         script: flutter build appbundle --release -v
     artifacts:
